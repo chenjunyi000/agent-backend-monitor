@@ -5,8 +5,9 @@ __pycache__/
 .venv/
 venv/
 
-# 运行期生成
-config/agents.json      # 首次运行自动生成，含本机个性化识别规则
+# 运行期生成（首次运行会自动重建）
+# 注意：.gitignore 不支持行尾注释，注释必须单独占一行
+config/agents.json
 logs/
 reports/
 *.log
