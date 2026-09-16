@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agent 后端监控器 · Web</title>
+<link rel="stylesheet" href="/static/style.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>🛰️</text></svg>">
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <span class="logo">🛰</span>
+    <div>
+      <h1>Agent 后端监控器</h1>
+      <div class="sub">看清楚每个 Agent 在自己进程树下启动了哪些后端、占了哪个端口、Agent 一退出它们会不会跟着消失</div>
+    </div>
+  </div>
+  <div class="actions">
+    <div class="live" id="live"><i></i><span id="liveText">LIVE</span></div>
+    <button id="btnRefresh" class="btn" title="立即刷新">刷新</button>
+    <label class="switch"><input type="checkbox" id="autoRefresh" checked><span>自动刷新</span></label>
+    <select id="intervalSel" class="select" title="采样间隔">
+      <option value="1">1 秒</option>
+      <option value="2" selected>2 秒</option>
+      <option value="3">3 秒</option>
+      <option value="5">5 秒</option>
+      <option value="10">10 秒</option>
+    </select>
+    <button id="btnReport" class="btn">导出 Markdown</button>
+    <button id="btnReportJson" class="btn">导出 JSON</button>
+  </div>
+</header>
+
+<section class="stats" id="stats"></section>
+<div class="banner" id="banner"></div>
+
+<nav class="tabs">
+  <button class="tab active" data-tab="agents">Agent 与后端 <b id="cntAgents">0</b></button>
+  <button class="tab" data-tab="ports">端口总览 <b id="cntPorts">0</b></button>
+  <button class="tab" data-tab="events">事件时间线 <b id="cntEvents">0</b></button>
+  <button class="tab" data-tab="help">说明</button>
+</nav>
+
+<main>
+  <!-- Agent 与后端 -->
+  <section class="panel active" id="tab-agents">
+    <div class="toolbar">
+      <input id="search" class="input" type="search" placeholder="搜索 Agent / 进程名 / 命令行 / 工作目录 / 端口…">
+      <label class="switch"><input type="checkbox" id="compact" checked><span>精简模式（隐藏辅助进程）</span></label>
+      <label class="switch"><input type="checkbox" id="onlyAgent"><span>只看 AI Agent</span></label>
+      <label class="switch"><input type="checkbox" id="onlyPort"><span>只看有端口的后端</span></label>
+      <span class="grow"></span>
+      <span class="dim" id="treeHint">◆ Agent 主体　▲ 后端服务　· 辅助进程　｜　点任意一行看右侧启动详情</span>
+    </div>
+    <div class="split">
+      <div class="list" id="tree"></div>
+      <aside class="detail" id="detail"></aside>
+    </div>
+  </section>
+
+  <!-- 端口总览 -->
+  <section class="panel" id="tab-ports">
+    <div class="toolbar">
+      <input id="portSearch" class="input" type="search" placeholder="按端口 / 进程 / 归属 Agent 过滤…">
+      <label class="switch"><input type="checkbox" id="hideSys" checked><span>隐藏系统端口</span></label>
+      <label class="switch"><input type="checkbox" id="onlyOwner"><span>只看归属于 Agent 的端口</span></label>
+      <span class="grow"></span>
+      <span class="dim">双击一行可跳到进程树</span>
+    </div>
+    <div class="tablewrap">
+      <table class="table" id="portTable">
+        <thead><tr>
+          <th style="width:70px">端口</th><th style="width:60px">协议</th><th style="width:130px">监听地址</th>
+          <th style="width:70px">PID</th><th style="width:150px">进程</th><th style="width:190px">归属 Agent</th>
+          <th style="width:100px">角色</th><th>工作目录</th><th>命令行</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 事件时间线 -->
+  <section class="panel" id="tab-events">
+    <div class="toolbar">
+      <span class="dim">持续记录：后端启动 / 退出、端口监听 / 释放，以及「Agent 退出 → 连带后端一起终止」的关联事件</span>
+      <span class="grow"></span>
+      <label class="switch"><input type="checkbox" id="eventOnlyWarn"><span>只看警告</span></label>
+    </div>
+    <div class="tablewrap">
+      <table class="table" id="eventTable">
+        <thead><tr><th style="width:100px">时间</th><th style="width:80px">级别</th><th>事件</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 说明 -->
+  <section class="panel" id="tab-help">
+    <div class="help" id="helpBody"></div>
+  </section>
+</main>
+
+<div class="toast" id="toast"></div>
+<div class="modal" id="modal"><div class="modal-box" id="modalBox"></div></div>
+
+<script>window.__ABM_TOKEN__ = "%%ABM_TOKEN%%"; window.__ABM_VERSION__ = "%%ABM_VERSION%%";</script>
+<script src="/static/app.js"></script>
+</body>
+</html>
